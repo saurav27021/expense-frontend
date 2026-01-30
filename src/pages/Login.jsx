@@ -1,68 +1,152 @@
-import React, { useState } from 'react';
-import { login } from '../api/auth';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from "react";
+import axios from "axios";
 
-const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+function Login() {
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-        try {
-            const data = await login(email, password);
-            console.log('Login Success:', data);
-            alert('Login Successful!');
-            // Redirect to dashboard or home (for now just alerting)
-        } catch (err) {
-            setError(err);
-        } finally {
-            setLoading(false);
+  const [errors, setErrors] = useState({});
+  const [message, setMessage] = useState("");
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const validate = () => {
+    let newError = {};
+    let isValid = true;
+
+    if (!formData.email) {
+      newError.email = "Email is required";
+      isValid = false;
+    }
+
+    if (!formData.password) {
+      newError.password = "Password is required";
+      isValid = false;
+    }
+
+    setErrors(newError);
+    return isValid;
+  };
+
+  /* ================= LOGIN ================= */
+  const handleFormSubmit = async (event) => {
+    event.preventDefault();
+
+    if (!validate()) return;
+
+    try {
+      const response = await axios.post(
+        "http://localhost:5001/auth/login",
+        formData,
+        { withCredentials: true }
+      );
+
+      setMessage(response.data.message || "Login successful");
+      setErrors({});
+    } catch (error) {
+      setErrors({
+        message:
+          error.response?.data?.message ||
+          "Something went wrong. Please try again later",
+      });
+      setMessage("");
+    }
+  };
+
+  /* ================= REGISTER (TEMP) ================= */
+  const registerFirstUser = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5001/auth/register",
+        {
+          email: formData.email,
+          password: formData.password,
         }
-    };
+      );
 
-    return (
-        <div className="glass-card">
-            <h1>Welcome Back</h1>
-            <p className="subtitle">Login to manage your expenses</p>
+      alert(response.data.message);
+    } catch (error) {
+      console.log("LOGIN ERROR FULL:", error);
+      console.log("LOGIN ERROR RESPONSE:", error.response);
+    
+      setErrors({
+        message:
+          error.response?.data?.message ||
+          error.message ||
+          "Login failed",
+      });
+      setMessage("");
+    }
+    
+  };
 
-            {error && <div className="error-message">{error}</div>}
+  return (
+    <div className="container text-center">
+      <h3>Login to continue</h3>
 
-            <form onSubmit={handleSubmit}>
-                <div className="input-group">
-                    <label>Email Address</label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="name@company.com"
-                        required
-                    />
-                </div>
-                <div className="input-group">
-                    <label>Password</label>
-                    <input
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn-primary" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Sign In'}
-                </button>
-            </form>
+      {errors.message && (
+        <div className="alert alert-danger">{errors.message}</div>
+      )}
 
-            <div className="auth-footer">
-                Don't have an account? <Link to="/register">Create one</Link>
-            </div>
+      {message && (
+        <div className="alert alert-success">{message}</div>
+      )}
+
+      <form onSubmit={handleFormSubmit}>
+        <div className="mb-3">
+          <label>Email:</label>
+          <input
+            className="form-control"
+            type="email"
+            name="email"
+            value={formData.email}
+            placeholder="Enter email"
+            onChange={handleChange}
+          />
+          {errors.email && (
+            <div className="text-danger">{errors.email}</div>
+          )}
         </div>
-    );
-};
+
+        <div className="mb-3">
+          <label>Password:</label>
+          <input
+            className="form-control"
+            type="password"
+            name="password"
+            value={formData.password}
+            placeholder="Enter password"
+            onChange={handleChange}
+          />
+          {errors.password && (
+            <div className="text-danger">{errors.password}</div>
+          )}
+        </div>
+
+        <button className="btn btn-primary me-2" type="submit">
+          Login
+        </button>
+
+        {/* TEMP BUTTON – click once, then remove */}
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={registerFirstUser}
+        >
+          Register First User
+        </button>
+      </form>
+    </div>
+  );
+}
 
 export default Login;
