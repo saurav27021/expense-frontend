@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function Login() {
+function Login({ setUser }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -52,6 +54,12 @@ function Login() {
 
       setMessage(response.data.message || "Login successful");
       setErrors({});
+
+      // Set user details and redirect
+      if (setUser) {
+        setUser(response.data.user || { email: formData.email });
+      }
+      navigate("/dashboard");
     } catch (error) {
       setErrors({
         message:
@@ -77,7 +85,7 @@ function Login() {
     } catch (error) {
       console.log("LOGIN ERROR FULL:", error);
       console.log("LOGIN ERROR RESPONSE:", error.response);
-    
+
       setErrors({
         message:
           error.response?.data?.message ||
@@ -86,7 +94,7 @@ function Login() {
       });
       setMessage("");
     }
-    
+
   };
 
   return (
