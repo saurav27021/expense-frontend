@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Logout from "./pages/Logout";
 import UserLayout from "./components/UserLayout";
@@ -39,7 +40,27 @@ function App() {
         }
       />
 
-      <Route path="/login" element={<Login setUser={setUserDetails} />} />
+      <Route
+        path="/login"
+        element={
+          userDetails ? (
+            <Navigate to="/dashboard" />
+          ) : (
+            <Login setUser={setUserDetails} />
+          )
+        }
+      />
+
+      <Route
+        path="/register"
+        element={
+          userDetails ? (
+            <Navigate to="/dashboard" />
+          ) : (
+            <Register setUser={setUserDetails} />
+          )
+        }
+      />
 
       <Route
         path="/dashboard"

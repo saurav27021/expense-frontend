@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 
 function Login({ setUser }) {
@@ -140,18 +140,14 @@ function Login({ setUser }) {
           )}
         </div>
 
-        <button className="btn btn-primary me-2" type="submit">
+        <button className="btn btn-primary w-100 mb-3" type="submit">
           Login
         </button>
 
-        {/* TEMP BUTTON – click once, then remove */}
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={registerFirstUser}
-        >
-          Register First User
-        </button>
+        <div className="text-center">
+          <span>Don't have an account? </span>
+          <Link to="/register">Register here</Link>
+        </div>
       </form>
     </div>
   );
