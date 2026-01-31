@@ -10,6 +10,7 @@ import UserLayout from "./components/UserLayout";
 
 function App() {
   const [userDetails, setUserDetails] = useState(null);
+  const [loading,setLoading]=useState(true);  
 
   const isUserLoggedIn = async () => {
     try {
@@ -20,12 +21,22 @@ function App() {
     } catch (error) {
       console.log("Not logged in");
       setUserDetails(null);
-    }
+    }finally {
+    setLoading(false); 
+  }
   };
 
   useEffect(() => {
     isUserLoggedIn();
   }, []);
+  if(loading){
+    return (
+      <div className="container text-center">
+        <h3>Loading</h3>
+
+      </div>
+    );
+  }
 
   return (
     <Routes>

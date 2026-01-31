@@ -10,6 +10,7 @@ function Register({ setUser }) {
         password: "",
     });
 
+
     const [errors, setErrors] = useState({});
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
@@ -90,7 +91,7 @@ function Register({ setUser }) {
     };
 
     return (
-        <div className="container mt-5" style={{ maxWidth: "1000px" }}>
+        <div className="container mt-5" >
             <div className="card shadow-sm">
                 <div className="card-body">
                     <h3 className="card-title text-center mb-4">Create Account</h3>
