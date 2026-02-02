@@ -96,7 +96,7 @@ function Login({ setUser }) {
     }
 
   };
-  // throw an error during login when a user who registered via Google SSO attempts to authenticate using a ausername and password . Handle this error on the UI by displaying a clear message :"please login using google sso"
+
 
 
   const handleGoogleSuccess = async (authResponse) => {
@@ -185,7 +185,7 @@ function Login({ setUser }) {
         <div className="col-6">
           <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
             <GoogleLogin onSuccess={handleGoogleSuccess} onError={handleGoogleFaliure} />
-
+              
           </GoogleOAuthProvider>
 
         </div>
