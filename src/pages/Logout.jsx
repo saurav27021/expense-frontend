@@ -9,7 +9,7 @@ function Logout({ setUser }) {
   useEffect(() => {
     const performLogout = async () => {
       try {
-        await axios.post("http://localhost:5001/auth/logout", {}, {
+        await axios.post(`${serverEndpoint}/auth/logout`, {}, {
           withCredentials: true
         });
         document.cookie=`jwtToken=; expires=Thu, 01 Jan1970 00:00:00 UTC; path=/;`;

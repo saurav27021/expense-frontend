@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { serverEndpoint } from "../config/appConfig";
 function Login({ setUser }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -47,7 +48,7 @@ function Login({ setUser }) {
 
     try {
       const response = await axios.post(
-        "http://localhost:5001/auth/login",
+        `${serverEndpoint}/auth/login`,
         formData,
         { withCredentials: true }
       );
@@ -74,7 +75,7 @@ function Login({ setUser }) {
   const registerFirstUser = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5001/auth/register",
+        `${serverEndpoint}/auth/register`,
         {
           email: formData.email,
           password: formData.password,
@@ -105,7 +106,7 @@ function Login({ setUser }) {
         idToken: authResponse?.credential,
       };
 
-      const response = await axios.post('http://localhost:5001/auth/google-auth', body, { withCredentials: true });
+      const response = await axios.post(`${serverEndpoint}/auth/google-auth`, body, { withCredentials: true });
       setUser(response.data.user);
       navigate("/dashboard");
     } catch (error) {

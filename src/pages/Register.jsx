@@ -63,7 +63,7 @@ function Register({ setUser }) {
 
         try {
             const response = await axios.post(
-                "http://localhost:5001/auth/register",
+                `${serverEndpoint}/auth/register`,
                 formData,
                 { withCredentials: true }
             );
