@@ -12,6 +12,8 @@ function Logout({ setUser }) {
         await axios.post("http://localhost:5001/auth/logout", {}, {
           withCredentials: true
         });
+        document.cookie=`jwtToken=; expires=Thu, 01 Jan1970 00:00:00 UTC; path=/;`;
+        setUser(null);
       } catch (error) {
         console.error("Logout error:", error);
       } finally {
