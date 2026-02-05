@@ -1,103 +1,119 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import axios from "axios";
-
+import { Navigate, Route, Routes } from "react-router-dom";
+import Home from "./pages/Home";
 import Login from "./pages/Login";
-import Register from "./pages/Register";
+import AppLayout from "./components/AppLayout";
+import { useEffect, useState } from "react";
 import Dashboard from "./pages/Dashboard";
 import Logout from "./pages/Logout";
 import UserLayout from "./components/UserLayout";
+import axios from "axios";
+import { serverEndpoint } from "./config/appConfig";
+import { useSelector, useDispatch } from "react-redux";
+import { SET_USER } from "./redux/user/action";
+import Groups from "./pages/Groups";
+import GroupExpenses from "./pages/GroupExpenses";
 
 function App() {
-  const [userDetails, setUserDetails] = useState(null);
-  const [loading,setLoading]=useState(true);  
+    const dispatch = useDispatch();
+    // Value of userDetails represents whether the user
+    // is logged in or not.
 
-  const isUserLoggedIn = async () => {
-    try {
-      const response = await axios.get(`${serverEndpoint}/auth/is-user-logged-in`, {
-        withCredentials: true,
-      });
-      setUserDetails(response.data.user);
-    } catch (error) {
-      console.log("Not logged in");
-      setUserDetails(null);
-    }finally {
-    setLoading(false); 
-  }
-  };
+    // useSelector takes in 1 function as input. Redux calls the function that
+    // you pass to useSelector with all the values its storing/managing.
+    // We need to take out userDetails since we're interested in userDetails object.
+    const userDetails = useSelector((state) => state.userDetails);
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    isUserLoggedIn();
-  }, []);
-  if(loading){
+    const isUserLoggedIn = async () => {
+        try {
+            const response = await axios.get(
+                `${serverEndpoint}/auth/is-user-logged-in`,
+                { withCredentials: true }
+            );
+
+            // setUserDetails(response.data.user);
+            dispatch({
+                type: SET_USER,
+                payload: response.data.user,
+            });
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        isUserLoggedIn();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="container text-center">
+                <h3>Loading...</h3>
+            </div>
+        );
+    }
+
     return (
-      <div className="container text-center">
-        <h3>Loading</h3>
+        <Routes>
+            <Route
+                path="/"
+                element={
+                    userDetails ? (
+                        <Navigate to="/dashboard" />
+                    ) : (
+                        <AppLayout>
+                            <Home />
+                        </AppLayout>
+                    )
+                }
+            />
+            <Route
+                path="/login"
+                element={
+                    userDetails ? (
+                        <Navigate to="/dashboard" />
+                    ) : (
+                        <AppLayout>
+                            <Login />
+                        </AppLayout>
+                    )
+                }
+            />
 
-      </div>
+            <Route
+                path="/dashboard"
+                element={
+                    userDetails ? (
+                        <UserLayout>
+                            <Groups />
+                        </UserLayout>
+                    ) : (
+                        <Navigate to="/login" />
+                    )
+                }
+            />
+
+            <Route
+                path="/groups/:groupId"
+                element={
+                    userDetails ? (
+                        <UserLayout>
+                            <GroupExpenses />
+                        </UserLayout>
+                    ) : (
+                        <Navigate to="/login" />
+                    )
+                }
+            />
+
+            <Route
+                path="/logout"
+                element={userDetails ? <Logout /> : <Navigate to="/login" />}
+            />
+        </Routes>
     );
-  }
-
-  return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          userDetails ? (
-            <Navigate to="/dashboard" />
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      />
-
-      <Route
-        path="/login"
-        element={
-          userDetails ? (
-            <Navigate to="/dashboard" />
-          ) : (
-            <Login setUser={setUserDetails} />
-          )
-        }
-      />
-
-      <Route
-        path="/register"
-        element={
-          userDetails ? (
-            <Navigate to="/dashboard" />
-          ) : (
-            <Register setUser={setUserDetails} />
-          )
-        }
-      />
-
-      <Route
-        path="/dashboard"
-        element={
-          userDetails ? (
-            <UserLayout>
-              <Dashboard user={userDetails} />
-            </UserLayout>
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      />
-
-      <Route
-        path="/logout"
-        element={
-          userDetails ? (
-            <Logout setUser={setUserDetails} />
-          ) : (
-            <Navigate to="/login" />
-          )
-        }
-      />
-    </Routes>
-  );
 }
 
 export default App;
