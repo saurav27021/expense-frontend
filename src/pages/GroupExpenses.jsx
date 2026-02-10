@@ -104,11 +104,22 @@ function GroupExpenses() {
 
         if (formData.splitType === 'equal') {
             const includedMembers = finalSplitDetails.filter(m => !m.excluded);
-            const splitAmount = amount / includedMembers.length;
-            finalSplitDetails = finalSplitDetails.map(m => ({
-                ...m,
-                amount: m.excluded ? 0 : splitAmount
-            }));
+            if (includedMembers.length > 0) {
+                const splitAmount = Math.floor((amount / includedMembers.length) * 100) / 100;
+                const remainder = Number((amount - (splitAmount * includedMembers.length)).toFixed(2));
+
+                let remainderHandled = false;
+                finalSplitDetails = finalSplitDetails.map(m => {
+                    if (m.excluded) return { ...m, amount: 0 };
+
+                    let share = splitAmount;
+                    if (!remainderHandled) {
+                        share = Number((splitAmount + remainder).toFixed(2));
+                        remainderHandled = true;
+                    }
+                    return { ...m, amount: share };
+                });
+            }
         }
 
         try {
@@ -196,15 +207,19 @@ function GroupExpenses() {
                 <div className="col-lg-4">
                     <div className="card border-0 shadow-sm rounded-4 mb-4">
                         <div className="card-body p-4">
-                            {/* User's Net Balance Header */}
-                            <div className="text-center mb-4 p-3 rounded-4 bg-light">
-                                <p className="extra-small text-muted mb-1 text-uppercase fw-bold ls-1">Your Total Balance</p>
-                                <h3 className={`fw-bold mb-0 ${balances[user?.email] >= 0 ? 'text-success' : 'text-danger'}`}>
-                                    {balances[user?.email] >= 0 ? `+₹${balances[user?.email]?.toFixed(2)}` : `-₹${Math.abs(balances[user?.email])?.toFixed(2)}`}
-                                </h3>
-                                <p className="extra-small text-muted mt-1">
-                                    {balances[user?.email] > 0 ? "Owed to you in total" : balances[user?.email] < 0 ? "You owe in total" : "All settled up!"}
-                                </p>
+                            {/* Member Balances Section */}
+                            <h6 className="fw-bold mb-3 small text-muted text-uppercase ls-1">Member Balances</h6>
+                            <div className="mb-4">
+                                {group?.membersEmail.map(email => (
+                                    <div key={email} className="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <p className="mb-0 fw-medium extra-small text-dark">{email === user?.email ? "You" : email.split("@")[0]}</p>
+                                        </div>
+                                        <span className={`fw-bold extra-small ${balances[email] >= 0 ? 'text-success' : 'text-danger'}`}>
+                                            {balances[email] >= 0 ? `+₹${balances[email]?.toFixed(2)}` : `-₹${Math.abs(balances[email])?.toFixed(2)}`}
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
 
                             <h6 className="fw-bold mb-3 small text-muted text-uppercase ls-1">Who owes who</h6>
@@ -213,20 +228,18 @@ function GroupExpenses() {
                                     const isIOwe = debt.from === user?.email;
                                     const isOwedToMe = debt.to === user?.email;
 
-                                    if (!isIOwe && !isOwedToMe) return null;
-
                                     return (
                                         <div key={index} className="d-flex justify-content-between align-items-center mb-3 p-2 border-bottom border-light">
                                             <div>
-                                                <p className="mb-0 fw-medium small text-dark">
-                                                    {isIOwe ? `You owe ${debt.to.split('@')[0]}` : `${debt.from.split('@')[0]} owes you`}
+                                                <p className="mb-0 fw-medium extra-small text-dark">
+                                                    {debt.from.split('@')[0]} owes {debt.to.split('@')[0]}
                                                 </p>
                                                 <p className="extra-small text-muted mb-0">
-                                                    {isIOwe ? debt.to : debt.from}
+                                                    {debt.from}
                                                 </p>
                                             </div>
                                             <div className="text-end">
-                                                <span className={`fw-bold d-block small ${isIOwe ? 'text-danger' : 'text-success'}`}>
+                                                <span className={`fw-bold d-block extra-small ${isIOwe ? 'text-danger' : 'text-success'}`}>
                                                     ₹{debt.amount.toFixed(2)}
                                                 </span>
                                                 {isIOwe && (
