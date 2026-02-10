@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
+import Can from "./Can";
 
 function UserHeader() {
     const user = useSelector((state) => state.userDetails);
@@ -34,17 +35,28 @@ function UserHeader() {
                 <div className="collapse navbar-collapse" id="userNavbar">
                     {/* Primary App Navigation */}
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
-                        {/* <li className="nav-item">
+                        <li className="nav-item">
                             <Link
                                 className={`nav-link px-3 ${isActive(
                                     "/dashboard"
                                 )}`}
                                 to="/dashboard"
                             >
-                                <i className="bi bi-speedometer2 me-1"></i>{" "}
-                                Groups
+                                <i className="bi bi-grid-fill me-1"></i> Groups
                             </Link>
-                        </li> */}
+                        </li>
+                        <Can requiredPermission="canViewUsers">
+                            <li className="nav-item">
+                                <Link
+                                    className={`nav-link px-3 ${isActive(
+                                        "/manage-users"
+                                    )}`}
+                                    to="/manage-users"
+                                >
+                                    <i className="bi bi-people-fill me-1"></i> Team
+                                </Link>
+                            </li>
+                        </Can>
                     </ul>
 
                     {/* User Profile Dropdown */}

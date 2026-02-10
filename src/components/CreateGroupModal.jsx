@@ -36,7 +36,7 @@ function CreateGroupModal({ show, onHide, onSuccess }) {
             ...formData,
             [e.target.name]: e.target.value,
         });
-        
+
         if (errors[e.target.name]) {
             setErrors({ ...errors, [e.target.name]: null });
         }
@@ -49,7 +49,7 @@ function CreateGroupModal({ show, onHide, onSuccess }) {
             setLoading(true);
             try {
                 const response = await axios.post(
-                    `${serverEndpoint}/groups/create`,
+                    `${serverEndpoint}/group/create`,
                     { name: formData.name, description: formData.description },
                     { withCredentials: true }
                 );
@@ -128,9 +128,8 @@ function CreateGroupModal({ show, onHide, onSuccess }) {
                                 <input
                                     type="text"
                                     placeholder="e.g., Goa Trip 2026"
-                                    className={`form-control form-control-lg bg-light border-0 fs-6 ${
-                                        errors.name ? "is-invalid" : ""
-                                    }`}
+                                    className={`form-control form-control-lg bg-light border-0 fs-6 ${errors.name ? "is-invalid" : ""
+                                        }`}
                                     name="name"
                                     value={formData.name}
                                     onChange={onChange}
@@ -149,9 +148,8 @@ function CreateGroupModal({ show, onHide, onSuccess }) {
                                 <textarea
                                     rows="3"
                                     placeholder="What is this group for?"
-                                    className={`form-control form-control-lg bg-light border-0 fs-6 ${
-                                        errors.description ? "is-invalid" : ""
-                                    }`}
+                                    className={`form-control form-control-lg bg-light border-0 fs-6 ${errors.description ? "is-invalid" : ""
+                                        }`}
                                     name="description"
                                     value={formData.description}
                                     onChange={onChange}

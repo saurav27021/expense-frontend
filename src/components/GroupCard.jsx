@@ -14,11 +14,11 @@ function GroupCard({ group, onUpdate }) {
         if (memberEmail.length === 0) return;
 
         try {
-            const response = await axios.patch(
-                `${serverEndpoint}/groups/members/add`,
+            const response = await axios.post(
+                `${serverEndpoint}/group/add-members`,
                 {
                     groupId: group._id,
-                    emails: [memberEmail],
+                    membersEmail: [memberEmail],
                 },
                 { withCredentials: true }
             );
@@ -39,7 +39,7 @@ function GroupCard({ group, onUpdate }) {
                     </div>
                     {group.adminEmail && (
                         <span className="badge rounded-pill bg-light text-dark border fw-normal small">
-                            Admin: {group.adminEmail.split("@")[0]}
+                            Created by: {group.adminEmail.split("@")[0]}
                         </span>
                     )}
                 </div>

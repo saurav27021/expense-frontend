@@ -27,9 +27,14 @@ function Header() {
                                 Home
                             </Link>
                         </li>
+                        <li className="nav-item">
+                            <Link className="nav-link fw-medium px-3 text-dark" to="/register">
+                                Register
+                            </Link>
+                        </li>
                         <li className="nav-item ms-lg-3 mt-2 mt-lg-0">
                             <Link className="btn btn-primary rounded-pill px-4 fw-bold shadow-sm" to="/login">
-                                Get Started
+                                Sign In
                             </Link>
                         </li>
                     </ul>

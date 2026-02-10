@@ -136,9 +136,8 @@ function Login() {
                                         Email Address
                                     </label>
                                     <input
-                                        className={`form-control form-control-lg rounded-3 fs-6 ${
-                                            errors.email ? "is-invalid" : ""
-                                        }`}
+                                        className={`form-control form-control-lg rounded-3 fs-6 ${errors.email ? "is-invalid" : ""
+                                            }`}
                                         type="email"
                                         name="email"
                                         placeholder="name@example.com"
@@ -156,9 +155,8 @@ function Login() {
                                         Password
                                     </label>
                                     <input
-                                        className={`form-control form-control-lg rounded-3 fs-6 ${
-                                            errors.password ? "is-invalid" : ""
-                                        }`}
+                                        className={`form-control form-control-lg rounded-3 fs-6 ${errors.password ? "is-invalid" : ""
+                                            }`}
                                         type="password"
                                         name="password"
                                         placeholder="Enter your password"
@@ -205,6 +203,14 @@ function Login() {
                                 </GoogleOAuthProvider>
                             </div>
 
+                            <div className="text-center mt-4 pt-2 border-top">
+                                <p className="text-muted small mb-0">
+                                    Don't have an account?{" "}
+                                    <Link to="/register" className="text-primary fw-bold text-decoration-none">
+                                        Register here
+                                    </Link>
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>

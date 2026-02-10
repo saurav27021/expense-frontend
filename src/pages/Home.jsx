@@ -199,7 +199,7 @@ function Home() {
                         with MergeMoney.
                     </p>
                     <Link
-                        to="/login"
+                        to="/register"
                         className="btn btn-light btn-lg px-5 rounded-pill fw-bold shadow"
                     >
                         Create Your Account
