@@ -35,5 +35,5 @@ export const ROLE_PERMISSIONS = {
 
 export const usePermission = () => {
     const role = useSelector((state) => state.userDetails?.role);
-    return ROLE_PERMISSIONS[role] ?? {};
+    return ROLE_PERMISSIONS[role?.toLowerCase()] ?? {};
 };

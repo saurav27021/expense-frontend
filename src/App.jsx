@@ -126,7 +126,7 @@ function App() {
                 path="/manage-users"
                 element={
                     userDetails ? (
-                        <ProtectedRoute roles={["admin"]}>
+                        <ProtectedRoute roles={["admin", "manager"]}>
                             <UserLayout>
                                 <ManageUsers />
                             </UserLayout>
