@@ -4,11 +4,11 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { serverEndpoint } from "../config/appConfig";
 
-// Modular Components
 import ExpenseSummary from "../components/expenses/ExpenseSummary";
 import ExpenseList from "../components/expenses/ExpenseList";
 import AddExpenseModal from "../components/expenses/AddExpenseModal";
 import PayModal from "../components/expenses/PayModal";
+import Toast from "../components/Toast";
 
 function GroupExpenses() {
     const { groupId } = useParams();
@@ -101,6 +101,13 @@ function GroupExpenses() {
         }));
     };
 
+    const [toast, setToast] = useState({ show: false, message: "", type: "success" });
+    const [confirmSettle, setConfirmSettle] = useState(false);
+
+    const showToast = (message, type = "success") => {
+        setToast({ show: true, message, type });
+    };
+
     const handleAddExpense = async (e) => {
         e.preventDefault();
         setModalLoading(true);
@@ -137,6 +144,7 @@ function GroupExpenses() {
             }, { withCredentials: true });
 
             setShowModal(false);
+            showToast("Expense added successfully!");
             setFormData({
                 title: "",
                 amount: "",
@@ -150,19 +158,28 @@ function GroupExpenses() {
             });
             fetchData();
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to add expense");
+            showToast(err.response?.data?.message || "Failed to add expense", "error");
         } finally {
             setModalLoading(false);
         }
     };
 
     const handleSettle = async () => {
-        if (!window.confirm("Are you sure you want to settle all expenses? This will clear all balances.")) return;
+        if (!confirmSettle) {
+            setConfirmSettle(true);
+            setTimeout(() => setConfirmSettle(false), 5000); // Reset confirm state after 5s
+            return;
+        }
+
         try {
             await axios.post(`${serverEndpoint}/expense/settle`, { groupId }, { withCredentials: true });
+            showToast("Settlement recorded successfully!");
+            setConfirmSettle(false);
             fetchData();
         } catch (err) {
-            alert("Failed to settle group");
+            const errorMsg = err.response?.data?.message || "Failed to settle group";
+            console.error("Settlement Error:", err.response?.data || err);
+            showToast(errorMsg, "error");
         }
     };
 
@@ -178,11 +195,28 @@ function GroupExpenses() {
             }, { withCredentials: true });
 
             setShowPayModal(false);
+            showToast("Payment recorded successfully!");
             fetchData();
         } catch (err) {
-            alert(err.response?.data?.message || "Payment failed");
+            showToast(err.response?.data?.message || "Payment failed", "error");
         } finally {
             setModalLoading(false);
+        }
+    };
+
+    const handleRemoveMember = async (email) => {
+        if (!window.confirm(`Are you sure you want to remove ${email} from the group?`)) return;
+
+        try {
+            await axios.post(`${serverEndpoint}/group/remove-members`, {
+                groupId,
+                membersEmail: [email]
+            }, { withCredentials: true });
+
+            showToast("Member removed successfully");
+            fetchData();
+        } catch (err) {
+            showToast(err.response?.data?.message || "Failed to remove member", "error");
         }
     };
 
@@ -216,7 +250,9 @@ function GroupExpenses() {
                         currentUser={user}
                         onAddExpense={() => setShowModal(true)}
                         onSettle={handleSettle}
+                        confirmSettle={confirmSettle}
                         onPay={openPayModal}
+                        onRemoveMember={handleRemoveMember}
                     />
                 </div>
 
@@ -250,6 +286,14 @@ function GroupExpenses() {
                 onHide={() => setShowPayModal(false)}
                 loading={modalLoading}
             />
+
+            {toast.show && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={() => setToast({ ...toast, show: false })}
+                />
+            )}
         </div>
     );
 }

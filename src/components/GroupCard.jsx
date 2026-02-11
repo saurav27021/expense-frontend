@@ -1,9 +1,11 @@
 import axios from "axios";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { serverEndpoint } from "../config/appConfig";
 
 function GroupCard({ group, onUpdate }) {
+    const user = useSelector((state) => state.userDetails);
     const [showMembers, setShowMembers] = useState(false);
     const [memberEmail, setMemberEmail] = useState("");
     const [errors, setErrors] = useState({});
@@ -26,16 +28,44 @@ function GroupCard({ group, onUpdate }) {
             onUpdate(response.data);
         } catch (error) {
             console.log(error);
-            setErrors({ message: "Unable to add member" });
+            setErrors({ message: error.response?.data?.message || "Unable to add member" });
         }
     };
+
+    const handleRemoveMember = async (email) => {
+        if (!window.confirm(`Are you sure you want to remove ${email}?`)) return;
+
+        try {
+            const response = await axios.post(
+                `${serverEndpoint}/group/remove-members`,
+                {
+                    groupId: group._id,
+                    membersEmail: [email],
+                },
+                { withCredentials: true }
+            );
+            onUpdate(response.data);
+        } catch (error) {
+            console.log(error);
+            alert(error.response?.data?.message || "Unable to remove member. Ensure they have a zero balance.");
+        }
+    };
+
+    const isAdmin = group.adminEmail?.toLowerCase() === user?.email?.toLowerCase() || user?.role?.toLowerCase() === 'admin';
 
     return (
         <div className="card h-100 border-0 shadow-sm rounded-4 transition-hover">
             <div className="card-body p-4 d-flex flex-column">
                 <div className="d-flex justify-content-between align-items-start mb-2">
-                    <div className="bg-primary bg-opacity-10 p-2 rounded-3 text-primary mb-2">
-                        <i className="bi bi-collection-fill fs-4"></i>
+                    <div className="d-flex align-items-center gap-2 mb-2">
+                        <div
+                            className={`rounded-circle ${group.paymentStatus?.isPaid ? 'bg-success' : 'bg-danger'}`}
+                            style={{ width: '10px', height: '10px' }}
+                            title={group.paymentStatus?.isPaid ? 'All Settled' : 'Settlement Pending'}
+                        ></div>
+                        <span className={`extra-small fw-bold text-uppercase ${group.paymentStatus?.isPaid ? 'text-success' : 'text-danger'}`} style={{ fontSize: '10px' }}>
+                            {group.paymentStatus?.isPaid ? 'Settled' : 'Not Settled'}
+                        </span>
                     </div>
                     {group.adminEmail && (
                         <span className="badge rounded-pill bg-light text-dark border fw-normal small">
@@ -70,8 +100,11 @@ function GroupCard({ group, onUpdate }) {
 
                 {showMembers && (
                     <div className="bg-light rounded-3 p-3 mb-4 border-0 shadow-inner">
-                        <h6 className="extra-small fw-bold text-uppercase text-secondary mb-3">
-                            Member List
+                        <h6 className="extra-small fw-bold text-uppercase text-secondary mb-3 d-flex justify-content-between flex-wrap">
+                            <span>Member List</span>
+                            <span className="text-lowercase text-muted fw-normal" style={{ fontSize: '10px' }}>
+                                (You: {user?.email || 'N/A'}, Admin: {group.adminEmail})
+                            </span>
                         </h6>
                         <div
                             className="overflow-auto"
@@ -80,24 +113,39 @@ function GroupCard({ group, onUpdate }) {
                             {group.membersEmail.map((member, index) => (
                                 <div
                                     key={index}
-                                    className="d-flex align-items-center mb-2 last-child-mb-0"
+                                    className="d-flex align-items-center justify-content-between mb-2 last-child-mb-0"
                                 >
-                                    <div
-                                        className="rounded-circle bg-white border d-flex align-items-center justify-content-center me-2 fw-bold text-primary shadow-sm"
-                                        style={{
-                                            width: "24px",
-                                            height: "24px",
-                                            fontSize: "10px",
-                                        }}
-                                    >
-                                        {member.charAt(0).toUpperCase()}
+                                    <div className="d-flex align-items-center flex-grow-1 text-truncate">
+                                        <div
+                                            className="rounded-circle bg-white border d-flex align-items-center justify-content-center me-2 fw-bold text-primary shadow-sm flex-shrink-0"
+                                            style={{
+                                                width: "24px",
+                                                height: "24px",
+                                                fontSize: "10px",
+                                            }}
+                                        >
+                                            {member.charAt(0).toUpperCase()}
+                                        </div>
+                                        <span
+                                            className="small text-dark text-truncate"
+                                            title={member}
+                                        >
+                                            {member}
+                                        </span>
                                     </div>
-                                    <span
-                                        className="small text-dark text-truncate"
-                                        title={member}
-                                    >
-                                        {member}
-                                    </span>
+                                    {(() => {
+                                        const shouldShow = isAdmin && member.toLowerCase() !== user?.email?.toLowerCase();
+                                        console.log('Remove button check:', { member, isAdmin, userEmail: user?.email, shouldShow });
+                                        return shouldShow;
+                                    })() && (
+                                            <button
+                                                className="btn btn-link text-danger p-0 ms-2 flex-shrink-0"
+                                                onClick={() => handleRemoveMember(member)}
+                                                style={{ fontSize: '0.8rem' }}
+                                            >
+                                                <i className="bi bi-trash"></i>
+                                            </button>
+                                        )}
                                 </div>
                             ))}
                         </div>

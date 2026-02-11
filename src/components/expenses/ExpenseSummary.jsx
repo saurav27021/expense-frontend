@@ -1,22 +1,58 @@
 import React from 'react';
 
-function ExpenseSummary({ group, balances, p2pDebts, currentUser, onAddExpense, onSettle, onPay }) {
+function ExpenseSummary({ group, balances, p2pDebts, currentUser, onAddExpense, onSettle, confirmSettle, onPay, onRemoveMember }) {
+    console.log("ExpenseSummary Debug:", {
+        admin: group?.adminEmail,
+        currentUser: currentUser?.email,
+        currentUserRole: currentUser?.role,
+        isMatch: group?.adminEmail === currentUser?.email,
+        fullCurrentUser: currentUser,
+        fullGroup: group
+    });
+
     return (
         <div className="card border-0 shadow-sm rounded-4 mb-4">
             <div className="card-body p-4">
                 {/* Member Balances Section */}
                 <h6 className="fw-bold mb-3 small text-muted text-uppercase ls-1">Member Balances</h6>
                 <div className="mb-4">
-                    {group?.membersEmail.map(email => (
-                        <div key={email} className="d-flex justify-content-between align-items-center mb-2">
-                            <div>
-                                <p className="mb-0 fw-medium extra-small text-dark">{email === currentUser?.email ? "You" : email.split("@")[0]}</p>
+                    {group?.membersEmail.map(email => {
+                        const isGroupCreator = group?.adminEmail?.toLowerCase() === currentUser?.email?.toLowerCase();
+                        const isAdminRole = currentUser?.role?.toLowerCase() === 'admin';
+                        const isSelf = email.toLowerCase() === currentUser?.email?.toLowerCase();
+                        const shouldShowButton = (isGroupCreator || isAdminRole) && !isSelf;
+
+                        console.log(`Member ${email}:`, {
+                            isGroupCreator,
+                            isAdminRole,
+                            isSelf,
+                            shouldShowButton
+                        });
+
+                        return (
+                            <div key={email} className="d-flex justify-content-between align-items-center mb-2">
+                                <div className="d-flex align-items-center">
+                                    <p className="mb-0 fw-medium extra-small text-dark me-2">
+                                        {email === currentUser?.email ? "You" : email.split("@")[0]}
+                                    </p>
+                                    {/* Show remove button for admin role users OR group creators */}
+                                    {shouldShowButton && (
+                                        <button
+                                            className="btn btn-link p-0 text-danger opacity-50 hover-opacity-100"
+                                            onClick={() => onRemoveMember(email)}
+                                            title="Remove member"
+                                            style={{ fontSize: '0.8rem' }}
+                                        >
+                                            <i className="bi bi-trash"></i>
+                                        </button>
+                                    )}
+                                </div>
+                                <span className={`fw-bold extra-small ${balances[email] >= 0 ? 'text-success' : 'text-danger'}`}>
+                                    {balances[email] >= 0 ? `+₹${balances[email]?.toFixed(2)}` : `-₹${Math.abs(balances[email])?.toFixed(2)}`}
+                                </span>
                             </div>
-                            <span className={`fw-bold extra-small ${balances[email] >= 0 ? 'text-success' : 'text-danger'}`}>
-                                {balances[email] >= 0 ? `+₹${balances[email]?.toFixed(2)}` : `-₹${Math.abs(balances[email])?.toFixed(2)}`}
-                            </span>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
 
                 <h6 className="fw-bold mb-3 small text-muted text-uppercase ls-1">Who owes who</h6>
@@ -54,19 +90,19 @@ function ExpenseSummary({ group, balances, p2pDebts, currentUser, onAddExpense, 
                     <p className="text-center text-muted extra-small py-3">No pending individual debts.</p>
                 )}
 
-                <div className="mt-4 p-3 bg-light rounded-3">
-                    <p className="extra-small text-muted mb-0">
-                        <strong>How it works:</strong> <br />
-                        Balance = (Money you paid) - (Your share). <br />
-                        P2P Debts are simplified to show the easiest way for everyone to settle up.
-                    </p>
-                </div>
                 <div className="d-grid gap-2 mt-4 pt-3 border-top">
                     <button className="btn btn-primary rounded-pill fw-bold" onClick={onAddExpense}>
                         <i className="bi bi-plus-lg me-2"></i> Add Expense
                     </button>
-                    <button className="btn btn-outline-success rounded-pill fw-bold" onClick={onSettle}>
-                        <i className="bi bi-check-all me-2"></i> Settle Group
+                    <button
+                        className={`btn ${confirmSettle ? 'btn-danger' : 'btn-outline-success'} rounded-pill fw-bold transition-all`}
+                        onClick={onSettle}
+                    >
+                        {confirmSettle ? (
+                            <><i className="bi bi-question-circle me-2"></i> Confirm Settle?</>
+                        ) : (
+                            <><i className="bi bi-check-all me-2"></i> Settle Group</>
+                        )}
                     </button>
                 </div>
             </div>
